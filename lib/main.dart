@@ -36,6 +36,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> { 
  final ImagePicker _picker = ImagePicker();
+ final List<String> _datas = []; // Exif情報を格納用
 
   File? _image;
 
@@ -45,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print("「 xfile == null 」時のエラーハンドリング");
     }
     final file = File(xfile!.path); // XFile → File
-    
+
     Uint8List buffer = await file.readAsBytes(); // バイナリを取得
     final tags = await readExifFromBytes(buffer); // Exif情報を取得
     // Mapで返されるのでループする
@@ -56,6 +57,12 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (xfile != null) {
         _image = File(xfile.path); // XFile → File
+        
+        // ListにExif情報を格納(2回目以降を考慮し、一旦クリア)
+        _datas.clear();
+        for (var MapEntry(key: key, value: value) in tags.entries) {
+          _datas.add('[$key] $value');
+        }
       }
     });
   }
@@ -70,11 +77,18 @@ class _MyHomePageState extends State<MyHomePage> {
             : Image.file(_image!),
     );
 
+  final list = ListView.builder( // Exif情報を表示するListView
+      itemCount: _datas.length,
+      itemBuilder: (c, i) => Text(_datas[i]),
+    );
+
     final body = Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          imageView, // ギャラリーのビュー
+          imageView,
+          Expanded(child: list), // ListViewを配置
+          const Text("↑入りきらない場合、スクロール可"),
         ],
       )
     );
@@ -93,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
       body: body, // ボディー   
       floatingActionButton: fab,     
     );
-
     return SafeArea(
       child: sc,
     );
