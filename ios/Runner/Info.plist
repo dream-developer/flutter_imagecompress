@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>「カメラ」を使用する理由や用途を記載</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>「フォトライブラリ」を使用する理由や用途を記載</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>「フォトライブラリ」に追加する理由や用途を記載</string>
 </dict>
 </plist>
