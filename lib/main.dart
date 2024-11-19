@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data'; 
 import 'package:exif/exif.dart';
-
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart' ;
 
 void main() {
   runApp(const MyApp());
@@ -35,8 +37,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> { 
- final ImagePicker _picker = ImagePicker();
- final List<String> _datas = []; // Exif情報を格納用
+  final ImagePicker _picker = ImagePicker();
+  final List<String> _datas = []; // Exif情報を格納用
 
   File? _image;
 
@@ -67,6 +69,28 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future _savePhoto() async { // ギャラリーへ画像を保存する
+    if (_image != null) {
+      final fixedImageBytes = await FlutterImageCompress.compressWithFile(
+        _image!.path,
+        // keepExif: false, // デフォルト
+        keepExif: true,
+      );
+
+      // .compressWithFile()で取得したバイナリのExif情報を取得（検証用）
+      final tags = await readExifFromBytes(fixedImageBytes!);
+      print(tags);
+
+      if(fixedImageBytes != null){
+        await ImageGallerySaver.saveImage(fixedImageBytes);
+        Fluttertoast.showToast(msg: "写真を保存しました");
+      }else{
+        // エラーハンドリング　
+        print("fixedImageBytes == null"); // デバッグ用
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageView = SizedBox(
@@ -77,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
             : Image.file(_image!),
     );
 
-  final list = ListView.builder( // Exif情報を表示するListView
+    final list = ListView.builder( // Exif情報を表示するListView
       itemCount: _datas.length,
       itemBuilder: (c, i) => Text(_datas[i]),
     );
@@ -99,6 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
         FloatingActionButton( // ギャラリーから画像を取得する
           onPressed: _openGallery,
           child: const Icon(Icons.image),
+        ),
+        const SizedBox(width: 20), 
+        FloatingActionButton( // ギャラリーへ画像を保存する
+          onPressed: _savePhoto,
+          child: const Icon(Icons.save,),
         ),
       ]
     );
