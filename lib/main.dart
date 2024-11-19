@@ -73,7 +73,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_image != null) {
       final fixedImageBytes = await FlutterImageCompress.compressWithFile(
         _image!.path,
-        quality: 30, // 解像度を下げる
+        minWidth: 100,
+        minHeight: 100,
       );
 
       // .compressWithFile()で取得したバイナリのExif情報を取得（検証用）
